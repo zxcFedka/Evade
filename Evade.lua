@@ -66,8 +66,12 @@ local Toggle = MainTab:CreateToggle({
     CurrentKeybind = "Q",
     HoldToInteract = false,
     Flag = "Keybind1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-    Callback = function(Keybind) 
+    Callback = function(Keybind)
+
+        
         Gui()
+
+        Toggle:Set(GuiEnabled)
     end,
  })
 
@@ -87,6 +91,8 @@ local Toggle2 = MainTab:CreateToggle({
 function Toggle()
     
     SpeedBoost = not SpeedBoost
+
+    Toggle2:Set(SpeedBoost)
 end
 
 local Keybind2 = MainTab:CreateKeybind({
