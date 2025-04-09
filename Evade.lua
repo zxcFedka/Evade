@@ -66,9 +66,7 @@ local Toggle = MainTab:CreateToggle({
     CurrentKeybind = "Q",
     HoldToInteract = false,
     Flag = "Keybind1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-    Callback = function(Keybind)
-
-        Toggle:Set(GuiEnabled)
+    Callback = function(Keybind) 
         Gui()
     end,
  })
@@ -89,8 +87,6 @@ local Toggle2 = MainTab:CreateToggle({
 function Toggle()
     
     SpeedBoost = not SpeedBoost
-
-    Toggle2:Set(SpeedBoost)
 end
 
 local Keybind2 = MainTab:CreateKeybind({
@@ -121,10 +117,9 @@ local Slider = MainTab:CreateSlider({
 
 RunService.Heartbeat:Connect(function()
 	if SpeedBoost then
-
         local Character = player.Character
         if Character then
-            local PlayerSpeed = Character:FindFirstChild("Humanoid").MoveSpeed
+            local PlayerSpeed = Character:FindFirstChild("Humanoid").WalkSpeed
 
             PlayerSpeed *= Multiplier
         end
