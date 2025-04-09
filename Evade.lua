@@ -1,4 +1,4 @@
-if not game:IsLoaded() then game.Loaded:Wait() end -- Добавим на всякий случай ожидание загрузки игры
+if not game:IsLoaded() then game.Loaded:Wait() end
 if game.PlaceId ~= 9872472334 then return end
 
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
@@ -9,28 +9,7 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Suka Hub",
     LoadingSubtitle = "by zxcFedka",
     Theme = "Default",
-    DisableRayfieldPrompts = false,
-    DisableBuildWarnings = false,
-    ConfigurationSaving = {
-        Enabled = false,
-        FolderName = nil,
-        FileName = "Big Hub"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false,
-    KeySettings = {
-        Title = "Untitled",
-        Subtitle = "Key System",
-        Note = "No method of obtaining the key is provided",
-        FileName = "Key",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = {"Hello"}
-    }
+    -- ... (остальные настройки окна Rayfield) ...
 })
 
 local player = game.Players.LocalPlayer
@@ -38,194 +17,131 @@ local PlayerGui = player.PlayerGui
 local RunService = game:GetService("RunService")
 
 -- --- Переменные и функции для GUI ---
-local GuiEnabled = false -- Начнем с выключенного состояния
-
+local GuiEnabled = false
 function ToggleGuiVisibility()
-    -- Вместо перебора всех, найдем основные GUI Evade (если известны имена)
-    -- Пример (имена могут быть другие!):
-    local mainGui = PlayerGui:FindFirstChild("MainUI") -- Или как он там называется
-    local otherGui = PlayerGui:FindFirstChild("GameHUD")
-    if mainGui then mainGui.Enabled = not mainGui.Enabled end
-    if otherGui then otherGui.Enabled = not otherGui.Enabled end
-
-    -- Если имена неизвестны, можно вернуться к перебору, но с осторожностью
-    -- for i, gui in pairs(PlayerGui:GetChildren()) do
-    --     if gui:IsA("ScreenGui") and gui.Name ~= "Rayfield" then -- Исключаем сам Rayfield
-    --          pcall(function() -- Используем pcall для безопасности
-    --              gui.Enabled = not gui.Enabled
-    --          end)
-    --     end
-    -- end
-
-    GuiEnabled = not GuiEnabled -- Обновляем состояние
+    -- ... (код скрытия/показа GUI как раньше) ...
+    GuiEnabled = not GuiEnabled
 end
 
 -- --- Переменные и функции для Speed Boost ---
 local SpeedBoostActive = false
-local maxWalkSpeed = 50 -- Начальное значение максимальной скорости (можно настроить)
-local originalSpeed = 16 -- Стандартная скорость
+local maxWalkSpeed = 50       -- Максимальная скорость (лимит)
+local boostAcceleration = 2   -- !! НОВОЕ: Насколько увеличивать скорость за кадр к лимиту
+local originalSpeed = 16      -- Стандартная скорость
 
-local function GetOriginalSpeed()
-    -- Эта функция пытается получить базовую скорость игрока.
-    -- Важно вызывать ее, когда игрок не под действием буста.
-    local Character = player.Character
-    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-    if Humanoid then
-        -- Если буст сейчас активен, мы не можем получить *чистую* оригинальную скорость.
-        -- Вернем стандартную или последнее известное значение.
-        if not SpeedBoostActive then
-             originalSpeed = Humanoid.WalkSpeed
-             -- Доп. проверка: если скорость ненормально высокая, сбросить к 16
-             if originalSpeed > 30 then -- Пороговое значение, можно изменить
-                 -- print("Warning: Detected high speed, potentially from game mechanics. Resetting base speed reference to 16.")
-                 originalSpeed = 16
-             end
-        -- else -- Если буст активен, не обновляем originalSpeed
-             -- print("Speed boost is active, cannot update original speed now.")
-        end
-    else
-        originalSpeed = 16 -- Если гуманоида нет, сбрасываем на стандарт
-    end
-    -- print("Current originalSpeed reference:", originalSpeed)
-end
+-- ... (Функции GetOriginalSpeed, SetupCharacterSpeedHandling как раньше) ...
+-- Важно: GetOriginalSpeed должна вызываться когда буст ВЫКЛЮЧЕН, чтобы получить реальную базовую скорость
 
 local function SetupCharacterSpeedHandling(character)
     local humanoid = character:WaitForChild("Humanoid")
-    task.wait(0.2) -- Небольшая задержка для инициализации
-    GetOriginalSpeed() -- Получаем скорость после появления
-
+    task.wait(0.2)
+    GetOriginalSpeed()
     humanoid.Died:Connect(function()
-        -- print("Player died, resetting original speed reference to 16")
-        originalSpeed = 16 -- Сброс при смерти
+        originalSpeed = 16
     end)
-
-    -- Можно добавить слежение за изменением скорости ИЗВНЕ нашего скрипта, но это сложнее.
-    -- humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
-    --     -- Если скорость изменилась НЕ из-за нашего скрипта и НЕ из-за Heartbeat
-    --     -- Можно попытаться обновить originalSpeed, но это рискованно.
-    --     -- Пока оставим GetOriginalSpeed при спавне/переключении буста.
-    -- end)
 end
 
--- Инициализация и обработка респавна
 if player.Character then
     SetupCharacterSpeedHandling(player.Character)
 end
 player.CharacterAdded:Connect(SetupCharacterSpeedHandling)
 
+local Toggle2 -- Объявим заранее для доступа в ToggleSpeedBoost
+local MaxSpeedSlider -- Объявим заранее
+local AccelerationSlider -- Объявим заранее
 
 function ToggleSpeedBoost()
     SpeedBoostActive = not SpeedBoostActive
-    -- print("Speed Boost Toggled:", SpeedBoostActive)
-
-    -- При выключении, Heartbeat вернет скорость к originalSpeed.
-    -- При включении, Heartbeat начнет применять maxWalkSpeed.
-    -- Можно попытаться получить актуальную originalSpeed перед включением:
     if SpeedBoostActive then
-        GetOriginalSpeed()
+        GetOriginalSpeed() -- Попытка получить базовую скорость перед активацией
     end
-
-    -- Обновляем UI (Toggle2 должен быть определен ниже)
-    if Toggle2 then -- Убедимся, что Toggle2 уже создан
+    if Toggle2 then
         Toggle2:Set(SpeedBoostActive)
     end
 end
 
 -- --- Создание UI ---
 local MainTab = Window:CreateTab("Home", nil)
-local MineSection = MainTab:CreateSection("Main")
--- MineSection:Set("Main") -- Эта строка не нужна, CreateSection уже задает заголовок
-
--- --- GUI Toggle UI ---
-MainTab:CreateDivider()
-
-local ToggleGui = MainTab:CreateToggle({
-    Name = "Toggle Game Gui",
-    CurrentValue = GuiEnabled, -- Синхронизируем с начальным состоянием
-    Flag = "GuiToggle", -- Уникальный флаг
-    Callback = function(Value)
-        ToggleGuiVisibility()
-        -- Не нужно устанавливать Value обратно, Rayfield делает это
-    end,
- })
-
- local KeybindGui = MainTab:CreateKeybind({
-    Name = "Gui Toggle Bind",
-    CurrentKeybind = "Q",
-    HoldToInteract = false,
-    Flag = "GuiKeybind", -- Уникальный флаг
-    Callback = function(Keybind)
-        ToggleGuiVisibility()
-        ToggleGui:Set(GuiEnabled) -- Обновляем состояние кнопки
-    end,
- })
+-- ... (Код для GUI Toggle UI как раньше) ...
 
 -- --- Speed Boost UI ---
 MainTab:CreateDivider()
 
-local Toggle2 = MainTab:CreateToggle({ -- Определяем Toggle2 здесь
-    Name = "Speed Boost Cap",
+Toggle2 = MainTab:CreateToggle({ -- Теперь присваиваем объявленной переменной
+    Name = "Speed Boost (Cap + Accel)",
     CurrentValue = SpeedBoostActive,
-    Flag = "SpeedBoostToggle", -- Уникальный флаг
+    Flag = "SpeedBoostToggle_V2", -- Уникальный флаг
     Callback = function(Value)
         ToggleSpeedBoost()
-        -- Value уже передан Rayfield'ом, повторно устанавливать не надо
     end,
 })
 
-local Keybind2 = MainTab:CreateKeybind({
+Keybind2 = MainTab:CreateKeybind({ -- Можно оставить старое имя Keybind2
     Name = "Speed Boost Bind",
     CurrentKeybind = "X",
     HoldToInteract = false,
-    Flag = "SpeedBoostKeybind", -- Уникальный флаг
+    Flag = "SpeedBoostKeybind_V2", -- Уникальный флаг
     Callback = function(Keybind)
         ToggleSpeedBoost()
-        -- Toggle2:Set(SpeedBoostActive) -- ToggleSpeedBoost уже обновляет кнопку
     end,
 })
 
-local MaxSpeedSlider = MainTab:CreateSlider({
+MaxSpeedSlider = MainTab:CreateSlider({ -- Присваиваем объявленной переменной
     Name = "Max Speed Cap",
-    Range = {16, 150}, -- Диапазон: от стандартной до высокой скорости
+    Range = {16, 150},
     Increment = 1,
     Suffix = " studs/s",
-    CurrentValue = maxWalkSpeed, -- Используем переменную
-    Flag = "MaxSpeedSlider", -- Уникальный флаг
+    CurrentValue = maxWalkSpeed,
+    Flag = "MaxSpeedSlider_V2", -- Уникальный флаг
     Callback = function(Value)
         maxWalkSpeed = Value
-        -- print("Max Speed set to:", maxWalkSpeed)
-        -- Не нужно применять сразу, Heartbeat сделает это, если буст активен
     end,
  })
 
--- --- Основной цикл обновления скорости ---
-RunService.Heartbeat:Connect(function()
-    if not SpeedBoostActive then
-        -- Если буст выключен, проверяем, нужно ли вернуть скорость к оригинальной
-        local Character = player.Character
-        local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-        if Humanoid and Humanoid.WalkSpeed ~= originalSpeed then
-            -- Доп. проверка: не устанавливать скорость, если она выше originalSpeed, но ниже чем был наш maxSpeed?
-            -- Это сложно, т.к. игра могла сама ее поднять.
-            -- Самый простой вариант - всегда возвращать к originalSpeed при выключении буста.
-            -- print("Heartbeat: Boost OFF, resetting speed to original:", originalSpeed)
-            Humanoid.WalkSpeed = originalSpeed
-        end
-        return -- Выходим, если буст неактивен
-    end
+-- !! НОВЫЙ СЛАЙДЕР !!
+AccelerationSlider = MainTab:CreateSlider({
+    Name = "Boost Acceleration",
+    Range = {0.1, 10}, -- Диапазон ускорения (подбирается экспериментально)
+    Increment = 0.1,
+    Suffix = " speed/frame", -- Примерный суффикс
+    CurrentValue = boostAcceleration,
+    Flag = "BoostAccelerationSlider", -- Уникальный флаг
+    Callback = function(Value)
+        boostAcceleration = Value
+    end,
+ })
 
-    -- Если буст активен:
+
+-- --- Основной цикл обновления скорости ---
+RunService.Heartbeat:Connect(function(dt) -- Получаем dt (delta time)
     local Character = player.Character
     local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-    if Humanoid then
-        if Humanoid.WalkSpeed < maxWalkSpeed then
-             -- print("Heartbeat: Boost ON, speed", Humanoid.WalkSpeed, "< max", maxWalkSpeed, ". Setting speed.")
-             Humanoid.WalkSpeed = maxWalkSpeed
-             print(maxWalkSpeed)
-        else
-             print("Heartbeat: Boost ON, speed", Humanoid.WalkSpeed, ">= max", maxWalkSpeed, ". No change.")
+
+    if not Humanoid then return end -- Выходим, если нет гуманоида
+
+    if SpeedBoostActive then
+        local currentSpeed = Humanoid.WalkSpeed
+        if currentSpeed < maxWalkSpeed then
+            -- Увеличиваем скорость, но не выше лимита
+            -- Используем dt для независимости от FPS: boostAcceleration * 60 * dt
+            -- где 60 - это базовая частота кадров, к которой мы приводим ускорение.
+            -- Или проще: просто добавляем значение, настроенное слайдером.
+            local accelerationAmount = boostAcceleration -- Можете умножить на dt * 60, если хотите frame-rate independence
+            local newSpeed = currentSpeed + accelerationAmount
+            Humanoid.WalkSpeed = math.min(newSpeed, maxWalkSpeed) -- Применяем ускоренную скорость, но не выше капа
+        -- else
+             -- Если скорость уже равна или выше капа, можно ничего не делать,
+             -- или принудительно установить кап: Humanoid.WalkSpeed = maxWalkSpeed
+             -- Оставим пока без действия, чтобы меньше конфликтовать
+        end
+    else
+        -- Если буст выключен, возвращаем оригинальную скорость
+        if Humanoid.WalkSpeed ~= originalSpeed then
+            -- Возможно, стоит добавить проверку, не была ли скорость изменена игрой?
+            -- Но для простоты - просто возвращаем к запомненной оригинальной.
+            Humanoid.WalkSpeed = originalSpeed
         end
     end
 end)
 
-print("Suka Hub Loaded for Evade")
+print("Suka Hub (v2: Accel Boost) Loaded for Evade")
