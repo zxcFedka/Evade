@@ -221,6 +221,7 @@ RunService.Heartbeat:Connect(function()
         if Humanoid.WalkSpeed < maxWalkSpeed then
              -- print("Heartbeat: Boost ON, speed", Humanoid.WalkSpeed, "< max", maxWalkSpeed, ". Setting speed.")
              Humanoid.WalkSpeed = maxWalkSpeed
+             print(maxWalkSpeed)
         -- else
              -- print("Heartbeat: Boost ON, speed", Humanoid.WalkSpeed, ">= max", maxWalkSpeed, ". No change.")
         end
