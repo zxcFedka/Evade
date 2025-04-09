@@ -77,7 +77,7 @@ local MainTab = Window:CreateTab("Home", nil)
 -- --- Секция управления GUI ---
 local ControlsSection = MainTab:CreateSection("Controls")
 
-local ToggleGui = ControlsSection:CreateToggle({
+local ToggleGui = MainTab:CreateToggle({
     Name = "Toggle Game Gui",
     CurrentValue = GuiEnabled,
     Flag = "GuiToggle",
@@ -85,11 +85,11 @@ local ToggleGui = ControlsSection:CreateToggle({
         ToggleGuiVisibility()
         -- После вызова ToggleGuiVisibility, обновим состояние кнопки,
         -- так как GuiEnabled обновляется внутри той функции
-        ToggleGui:Set(GuiEnabled)
+        -- ToggleGui:Set(GuiEnabled)
     end,
  })
 
- local KeybindGui = ControlsSection:CreateKeybind({
+ local KeybindGui = MainTab:CreateKeybind({
     Name = "Gui Toggle Bind",
     CurrentKeybind = "Q",
     HoldToInteract = false,
@@ -106,7 +106,7 @@ MainTab:CreateDivider()
 -- --- Секция управления Speed/Jump ---
 local SpeedJumpSection = MainTab:CreateSection("Movement")
 
-local WalkSpeedSlider = SpeedJumpSection:CreateSlider({
+local WalkSpeedSlider = MainTab:CreateSlider({
     Name = "Speed",
     Range = {16, 150},
     Increment = 1,
@@ -118,7 +118,7 @@ local WalkSpeedSlider = SpeedJumpSection:CreateSlider({
     end
 })
 
-local JumpPowerSlider = SpeedJumpSection:CreateSlider({
+local JumpPowerSlider = MainTab:CreateSlider({
     Name = "JumpPower",
     Range = {50, 200},
     Increment = 1,
