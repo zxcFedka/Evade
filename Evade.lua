@@ -41,7 +41,7 @@ MineSection:Set("Main")
 
 local Divider = MainTab:CreateDivider()
 
-local function Gui(enable)
+function Gui(enable)
     for i,gui in PlayerGui:GetChildren() do
         print(gui)
         gui.Enabled = not gui.Enabled
@@ -53,6 +53,7 @@ local Toggle = MainTab:CreateToggle({
     CurrentValue = false,
     Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
+        print(Value)
         Gui(Value)
     end,
  })
