@@ -43,7 +43,7 @@ local Divider = MainTab:CreateDivider()
 
 local function Gui(enable)
     for i,gui in PlayerGui:GetChildren() do
-        gui.Enabled = not fromSave
+        gui.Enabled = not gui.Enabled
     end
 end
 
