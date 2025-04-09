@@ -75,14 +75,54 @@ local Toggle = MainTab:CreateToggle({
 
 MainTab:CreateDivider()
 
+local SpeedBoost = false
+
+local Toggle2 = MainTab:CreateToggle({
+    Name = "Speed Boost",
+    CurrentValue = false,
+    Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+        Toggle()
+    end,
+ })
+
+function Toggle()
+    
+    SpeedBoost = not SpeedBoost
+
+    Toggle2:Set(SpeedBoost)
+end
+
+local Keybind2 = MainTab:CreateKeybind({
+    Name = "Speed Boost bind",
+    CurrentKeybind = "X",
+    HoldToInteract = false,
+    Flag = "Keybind1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Keybind)
+        Toggle()
+    end,
+})
+
+local Multiplier = 1
+
 local Slider = MainTab:CreateSlider({
     Name = "Speed boost)))))))))))))))",
     Range = {0, 10},
     Increment = 1,
     Suffix = "x",
-    CurrentValue = 1,
+    CurrentValue = Multiplier,
     Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
-        print(Value)
+        Multiplier = Value
     end,
  })
+
+ local RunService = game:GetService("RunService")
+
+RunService.Heartbeat:Connect(function()
+	if SpeedBoost then
+        local PlayerSpeed = player.Character:FindFirstChild("Humanoid")
+
+        PlayerSpeed *= Multiplier
+    end
+end)
