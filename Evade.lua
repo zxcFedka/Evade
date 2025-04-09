@@ -46,10 +46,6 @@ if player.Character then
 end
 player.CharacterAdded:Connect(SetupCharacterSpeedHandling)
 
-local Toggle2 -- Объявим заранее для доступа в ToggleSpeedBoost
-local MaxSpeedSlider -- Объявим заранее
-local AccelerationSlider -- Объявим заранее
-
 function ToggleSpeedBoost()
     SpeedBoostActive = not SpeedBoostActive
     if SpeedBoostActive then
@@ -67,7 +63,7 @@ local MainTab = Window:CreateTab("Home", nil)
 -- --- Speed Boost UI ---
 MainTab:CreateDivider()
 
-Toggle2 = MainTab:CreateToggle({ -- Теперь присваиваем объявленной переменной
+local Toggle2 = MainTab:CreateToggle({ -- Теперь присваиваем объявленной переменной
     Name = "Speed Boost (Cap + Accel)",
     CurrentValue = SpeedBoostActive,
     Flag = "SpeedBoostToggle_V2", -- Уникальный флаг
@@ -76,7 +72,7 @@ Toggle2 = MainTab:CreateToggle({ -- Теперь присваиваем объя
     end,
 })
 
-Keybind2 = MainTab:CreateKeybind({ -- Можно оставить старое имя Keybind2
+local Keybind2 = MainTab:CreateKeybind({ -- Можно оставить старое имя Keybind2
     Name = "Speed Boost Bind",
     CurrentKeybind = "X",
     HoldToInteract = false,
@@ -86,7 +82,7 @@ Keybind2 = MainTab:CreateKeybind({ -- Можно оставить старое �
     end,
 })
 
-MaxSpeedSlider = MainTab:CreateSlider({ -- Присваиваем объявленной переменной
+local MaxSpeedSlider = MainTab:CreateSlider({ -- Присваиваем объявленной переменной
     Name = "Max Speed Cap",
     Range = {16, 150},
     Increment = 1,
@@ -99,7 +95,7 @@ MaxSpeedSlider = MainTab:CreateSlider({ -- Присваиваем объявле
  })
 
 -- !! НОВЫЙ СЛАЙДЕР !!
-AccelerationSlider = MainTab:CreateSlider({
+local AccelerationSlider = MainTab:CreateSlider({
     Name = "Boost Acceleration",
     Range = {0.1, 10}, -- Диапазон ускорения (подбирается экспериментально)
     Increment = 0.1,
