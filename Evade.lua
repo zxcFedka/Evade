@@ -39,13 +39,17 @@ local MainTab = Window:CreateTab("Home", nil)
 local MineSection = MainTab:CreateSection("Main")
 MineSection:Set("Main")
 
-local Divider = MainTab:CreateDivider()
+MainTab:CreateDivider()
+
+local GuiEnabled = true
 
 function Gui()
     for i,gui in PlayerGui:GetChildren() do
         print(gui)
         gui.Enabled = not gui.Enabled
     end
+
+    GuiEnabled = not GuiEnabled
 end
 
 local Toggle = MainTab:CreateToggle({
@@ -63,6 +67,22 @@ local Toggle = MainTab:CreateToggle({
     HoldToInteract = false,
     Flag = "Keybind1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Keybind)
+
+        Toggle:Set(GuiEnabled)
         Gui()
+    end,
+ })
+
+MainTab:CreateDivider()
+
+local Slider = MainTab:CreateSlider({
+    Name = "Speed boost)))))))))))))))",
+    Range = {0, 100},
+    Increment = 10,
+    Suffix = "хуи в жопе",
+    CurrentValue = 10,
+    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+        print(Value)
     end,
  })
