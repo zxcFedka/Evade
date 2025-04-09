@@ -96,7 +96,6 @@ local ToggleGui = MainTab:CreateToggle({
     Flag = "GuiKeybind",
     Callback = function(Keybind)
         ToggleGuiVisibility()
-        ToggleGui:Set(GuiEnabled)
     end,
  })
 
