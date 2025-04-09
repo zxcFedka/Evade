@@ -58,4 +58,14 @@ local Toggle = MainTab:CreateToggle({
     end,
  })
 
- print("hui")
+ local Keybind = MainTab:CreateKeybind({
+    Name = "Gui bind",
+    CurrentKeybind = "Q",
+    HoldToInteract = false,
+    Flag = "Keybind1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Keybind)
+        print(Keybind)
+    -- The function that takes place when the keybind is pressed
+    -- The variable (Keybind) is a boolean for whether the keybind is being held or not (HoldToInteract needs to be true)
+    end,
+ })
