@@ -4,187 +4,490 @@ if game.PlaceId ~= 9872472334 then return end
 local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "Evade",
-	Icon = 0,
-	LoadingTitle = "Suka Hub",
-	LoadingSubtitle = "by zxcFedka",
-	Theme = "Default",
-	-- ... (остальные настройки окна Rayfield) ...
+    Name = "Evade Hub", -- Changed Name
+    Icon = 0,
+    LoadingTitle = "Suka Hub",
+    LoadingSubtitle = "by zxcFedka + community", -- Updated Subtitle to include community
+    Theme = "Default",
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = false,
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil,
+        FileName = "Big Hub"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false,
+    KeySettings = {
+        Title = "Untitled",
+        Subtitle = "Key System",
+        Note = "No method of obtaining the key is provided",
+        FileName = "Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"Hello"}
+    }
 })
 
 local player = game.Players.LocalPlayer
 local PlayerGui = player.PlayerGui
-local RunService = game:GetService("RunService")
 
--- --- Переменные и функции для GUI ---
-local GuiEnabled = false
-function ToggleGuiVisibility()
-	-- ... (код скрытия/показа GUI как раньше) ...
-	GuiEnabled = not GuiEnabled
+local MainTab = Window:CreateTab("General", nil) -- Changed Tab Name to "General" for better fit
+local VisualTab = Window:CreateTab("Visuals") -- Added Visuals Tab
+local GameTab = Window:CreateTab("Game") -- Added Game Tab
+local ConfigsTab = Window:CreateTab("Settings") -- Added Settings Tab
+
+local EvadeSector = MainTab:CreateSection("Character") -- Kept "Character" Section Name
+local VisualsSector = VisualTab:CreateSection("Visuals") -- Visuals Section
+local CreditsSector = MainTab:CreateSection("Credits") -- Kept Credits Section Name
+local GameUtilSector = GameTab:CreateSection("Utils") -- Game Utils Section
+local WorldSector = GameTab:CreateSection("World") -- World Settings Section
+local ConfigsSector = ConfigsTab:CreateSection("Config") -- Configs Section, can rename if needed
+
+
+getgenv().Settings = {
+    moneyfarm = false,
+    afkfarm = false,
+    NoCameraShake = false,
+    Downedplayeresp = false,
+    AutoRespawn = false,
+    TicketFarm = false,
+    Speed = 1450, -- Initial Speed from the script
+    Jump = 3,    -- Initial JumpPower from the script
+    reviveTime = 3,
+    DownedColor = Color3.fromRGB(255,0,0),
+    PlayerColor = Color3.fromRGB(255,170,0),
+
+    stats = {
+        TicketFarm = {
+            earned = nil,
+            duration = 0
+        },
+        TokenFarm = {
+            earned = nil,
+            duration = 0
+        }
+    }
+}
+
+local WalkSpeedSlider = EvadeSector:CreateSlider({ -- Using Rayfield Slider
+    Name = "Speed",
+    Range = {1450, 12000}, -- From the provided script
+    Increment = 100,      -- From the provided script
+    Suffix = " studs/s", -- Added Suffix for clarity
+    CurrentValue = Settings.Speed,
+    Flag = "WalkSpeedSlider", -- Unique Flag
+    Callback = function(Value)
+        Settings.Speed = Value
+    end
+})
+
+
+local JumpPowerSlider = EvadeSector:CreateSlider({ -- Using Rayfield Slider
+    Name = "JumpPower",
+    Range = {3, 20},      -- From the provided script
+    Increment = 1,       -- From the provided script
+    Suffix = " Power",   -- Added Suffix for clarity
+    CurrentValue = Settings.Jump,
+    Flag = "JumpPowerSlider", -- Unique Flag
+    Callback = function(Value)
+        Settings.Jump = Value
+    end
+})
+
+WorldSector:CreateButton({ -- Rayfield Button
+    Name = 'Full Bright',
+    Callback = function()
+       	game.Lighting.Brightness = 4
+		game.Lighting.FogEnd = 100000
+		game.Lighting.GlobalShadows = false
+        game.Lighting.ClockTime = 12
+    end
+})
+
+WorldSector:CreateToggle({ -- Rayfield Toggle
+    Name = 'No Camera Shake',
+    CurrentValue = Settings.NoCameraShake,
+    Flag = "NoCameraShakeToggle", -- Unique Flag
+    Callback = function(State)
+        Settings.NoCameraShake = State
+    end
+})
+
+GameUtilSector:CreateToggle({ -- Rayfield Toggle
+    Name = 'Fast Revive',
+    CurrentValue = false, -- Initial state, can be set based on Settings.reviveTime if needed
+    Flag = "FastReviveToggle", -- Unique Flag
+    Callback = function(State)
+        if State then
+            workspace.Game.Settings:SetAttribute("ReviveTime", 2.2)
+        else
+            workspace.Game.Settings:SetAttribute("ReviveTime", Settings.reviveTime)
+        end
+    end
+})
+
+EvadeSector:CreateToggle({ -- Rayfield Toggle
+    Name = 'Auto Respawn',
+    CurrentValue = Settings.AutoRespawn,
+    Flag = "AutoRespawnToggle", -- Unique Flag
+    Callback = function(State)
+        Settings.AutoRespawn = State
+    end
+})
+
+EvadeSector:CreateButton({ -- Rayfield Button
+    Name = 'Respawn',
+    Callback = function()
+        game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+    end
+})
+
+
+FarmsTab = Window:CreateTab("Farms") -- Farms Tab
+local FarmsSector = FarmsTab:CreateSection("Farms") -- Farms Section
+local FarmStatsSector = FarmsTab:CreateSection("Stats") -- Farm Stats Section
+
+FarmsSector:CreateToggle({ -- Rayfield Toggle
+    Name = 'Money Farm',
+    CurrentValue = Settings.moneyfarm,
+    Flag = "MoneyFarmToggle", -- Unique Flag
+    Callback = function(State)
+        Settings.moneyfarm = State
+    end
+})
+
+FarmsSector:CreateToggle({ -- Rayfield Toggle
+    Name = 'Afk Farm',
+    CurrentValue = Settings.afkfarm,
+    Flag = "AfkFarmToggle", -- Unique Flag
+    Callback = function(State)
+        Settings.afkfarm = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for ESP Enable
+    Name = 'Enable Esp',
+    CurrentValue = Esp.Enabled,
+    Flag = "EspEnableToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.Enabled = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Bot ESP
+    Name = 'Bot Esp',
+    CurrentValue = Esp.NPCs,
+    Flag = "BotEspToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.NPCs = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Ticket ESP
+    Name = 'Ticket Esp',
+    CurrentValue = Esp.TicketEsp,
+    Flag = "TicketEspToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.TicketEsp = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Downed Player ESP
+    Name = 'Downed Player Esp',
+    CurrentValue = Settings.Downedplayeresp,
+    Flag = "DownedPlayerEspToggle", -- Unique Flag
+    Callback = function(State)
+        Settings.Downedplayeresp = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Boxes ESP
+    Name = 'Boxes',
+    CurrentValue = Esp.Boxes,
+    Flag = "BoxesEspToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.Boxes = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Tracers ESP
+    Name = 'Tracers',
+    CurrentValue = Esp.Tracers,
+    Flag = "TracersEspToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.Tracers = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Players ESP
+    Name = 'Players',
+    CurrentValue = Esp.Players,
+    Flag = "PlayersEspToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.Players = State
+    end
+})
+
+VisualsSector:CreateToggle({ -- Rayfield Toggle for Distance ESP
+    Name = 'Distance',
+    CurrentValue = Esp.Distance,
+    Flag = "DistanceEspToggle", -- Unique Flag
+    Callback = function(State)
+        Esp.Distance = State
+    end
+})
+
+VisualsSector:CreateColorpicker({ -- Rayfield Colorpicker for Player Color
+    Name = "Player Color",
+    DefaultColor = Settings.PlayerColor,
+    Flag = "PlayerColorPicker", -- Unique Flag
+    Callback = function(Color)
+        Settings.PlayerColor = Color
+    end
+})
+
+VisualsSector:CreateColorpicker({ -- Rayfield Colorpicker for Downed Player Color
+    Name = "Downed Player Color",
+    DefaultColor = Settings.DownedColor,
+    Flag = "DownedPlayerColorPicker", -- Unique Flag
+    Callback = function(Color)
+        Settings.DownedColor = Color
+    end
+})
+
+CreditsSector:CreateLabel({Text = "Developed By xCLY And batusd"}) -- Rayfield Label
+CreditsSector:CreateLabel({Text = "UI Lib: Jans Lib"}) -- Rayfield Label
+CreditsSector:CreateLabel({Text = "ESP Lib: Kiriot"}) -- Rayfield Label
+ConfigsSector:CreateConfigSystem() -- Rayfield Config System
+
+local TypeLabelC5 = FarmStatsSector:CreateLabel({Text = 'Auto Farm Stats'}) -- Rayfield Label
+local DurationLabelC5 = FarmStatsSector:CreateLabel({Text = 'Duration: 0'}) -- Rayfield Label
+local EarnedLabelC5 = FarmStatsSector:CreateLabel({Text = 'Earned: 0'}) -- Rayfield Label
+--local TicketsLabelC5 = FarmStats:CreateLabel('Total Tickets:'..localplayer:GetAttribute('Tickets'))
+
+local WorkspacePlayers = game:GetService("Workspace").Game.Players;
+local Players = game:GetService('Players');
+local localplayer = Players.LocalPlayer;
+
+local FindAI = function()
+    for _,v in pairs(WorkspacePlayers:GetChildren()) do
+        if not Players:FindFirstChild(v.Name) then
+            return v
+        end
+    end
 end
 
--- --- Переменные и функции для Speed Boost ---
-local SpeedBoostActive = false
-local maxWalkSpeed = 50       -- Максимальная скорость (лимит)
-local boostAcceleration = 2   -- !! НОВОЕ: Насколько увеличивать скорость за кадр к лимиту
-local originalSpeed = 16      -- Стандартная скорость
 
--- ... (Функции GetOriginalSpeed, SetupCharacterSpeedHandling как раньше) ...
--- Важно: GetOriginalSpeed должна вызываться когда буст ВЫКЛЮЧЕН, чтобы получить реальную базовую скорость
-
-local function GetOriginalSpeed()
-	-- Эта функция пытается получить базовую скорость игрока.
-	-- Важно вызывать ее, когда игрок не под действием буста.
-	local Character = player.Character
-	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-	if Humanoid then
-		-- Если буст сейчас активен, мы не можем получить *чистую* оригинальную скорость.
-		-- Вернем стандартную или последнее известное значение.
-		if not SpeedBoostActive then
-			originalSpeed = Humanoid.WalkSpeed
-			-- Доп. проверка: если скорость ненормально высокая, сбросить к 16
-			if originalSpeed > 30 then -- Пороговое значение, можно изменить
-				-- print("Warning: Detected high speed, potentially from game mechanics. Resetting base speed reference to 16.")
-				originalSpeed = 16
-			end
-			-- else -- Если буст активен, не обновляем originalSpeed
-			-- print("Speed boost is active, cannot update original speed now.")
-		end
-	else
-		originalSpeed = 16 -- Если гуманоида нет, сбрасываем на стандарт
-	end
-	-- print("Current originalSpeed reference:", originalSpeed)
+local GetDownedPlr = function()
+    for i,v in pairs(WorkspacePlayers:GetChildren()) do
+        if v:GetAttribute("Downed") then
+            return v
+        end
+    end
 end
 
-local function SetupCharacterSpeedHandling(character)
-	local humanoid = character:WaitForChild("Humanoid")
-	task.wait(0.2)
-	GetOriginalSpeed()
-	humanoid.Died:Connect(function()
-		originalSpeed = 16
-	end)
+--Shitty Auto farm 🥶💀🤡💀🤡💀🤡
+local revive = function()
+    local downedplr = GetDownedPlr()
+    if downedplr ~= nil and downedplr:FindFirstChild('HumanoidRootPart') then
+        task.spawn(function()
+            while task.wait() do
+                if localplayer.Character then
+                    workspace.Game.Settings:SetAttribute("ReviveTime", 2.2)
+                    localplayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(downedplr:FindFirstChild('HumanoidRootPart').Position.X, downedplr:FindFirstChild('HumanoidRootPart').Position.Y + 3, downedplr:FindFirstChild('HumanoidRootPart').Position.Z)
+                    task.wait()
+                    game:GetService("ReplicatedStorage").Events.Revive.RevivePlayer:FireServer(tostring(downedplr), false)
+                    task.wait(4.5)
+                    game:GetService("ReplicatedStorage").Events.Revive.RevivePlayer:FireServer(tostring(downedplr), true)
+                    game:GetService("ReplicatedStorage").Events.Revive.RevivePlayer:FireServer(tostring(downedplr), true)
+                    game:GetService("ReplicatedStorage").Events.Revive.RevivePlayer:FireServer(tostring(downedplr), true)
+                    break
+                end
+            end
+        end)
+    end
 end
 
--- --- Создание UI ---
-local MainTab = Window:CreateTab("Home", nil)
-
-if player.Character then
-	SetupCharacterSpeedHandling(player.Character)
-end
-player.CharacterAdded:Connect(SetupCharacterSpeedHandling)
-
--- --- GUI Toggle UI ---
-MainTab:CreateDivider()
-
-local ToggleGui = MainTab:CreateToggle({
-	Name = "Toggle Game Gui",
-	CurrentValue = GuiEnabled, -- Синхронизируем с начальным состоянием
-	Flag = "GuiToggle", -- Уникальный флаг
-	Callback = function(Value)
-		ToggleGuiVisibility()
-		-- Не нужно устанавливать Value обратно, Rayfield делает это
-	end,
+--Kiriot
+Esp:AddObjectListener(WorkspacePlayers, {
+    Color =  Color3.fromRGB(255,0,0),
+    Type = "Model",
+    PrimaryPart = function(obj)
+        local hrp = obj:FindFirstChild('HRP')
+        while not hrp do
+            wait()
+            hrp = obj:FindFirstChild('HRP')
+        end
+        return hrp
+    end,
+    Validator = function(obj)
+        return not game.Players:GetPlayerFromCharacter(obj)
+    end,
+    CustomName = function(obj)
+        return '[AI] '..obj.Name
+    end,
+    IsEnabled = "NPCs",
 })
 
-local KeybindGui = MainTab:CreateKeybind({
-	Name = "Gui Toggle Bind",
-	CurrentKeybind = "Q",
-	HoldToInteract = false,
-	Flag = "GuiKeybind", -- Уникальный флаг
-	Callback = function(Keybind)
-		ToggleGuiVisibility()
-		ToggleGui:Set(GuiEnabled) -- Обновляем состояние кнопки
-	end,
-})
+--[[Esp:AddObjectListener(game:GetService("Workspace").Game.Effects.Tickets, {
+    CustomName = "Ticket",
+    Color = Color3.fromRGB(41,180,255),
+    IsEnabled = "TicketEsp"
+})]]
 
--- --- Speed Boost UI ---
-MainTab:CreateDivider()
-
-local Toggle2 = MainTab:CreateToggle({ -- Теперь присваиваем объявленной переменной
-	Name = "Speed Boost (Cap + Accel)",
-	CurrentValue = SpeedBoostActive,
-	Flag = "SpeedBoostToggle_V2", -- Уникальный флаг
-	Callback = function(Value)
-		ToggleSpeedBoost()
-	end,
-})
-
-function ToggleSpeedBoost()
-	SpeedBoostActive = not SpeedBoostActive
-	if SpeedBoostActive then
-		GetOriginalSpeed() -- Попытка получить базовую скорость перед активацией
-	end
-	if Toggle2 then
-		Toggle2:Set(SpeedBoostActive)
-	end
+--Tysm CJStylesOrg
+Esp.Overrides.GetColor = function(char)
+   local GetPlrFromChar = Esp:GetPlrFromChar(char)
+   if GetPlrFromChar then
+       if Settings.Downedplayeresp and GetPlrFromChar.Character:GetAttribute("Downed") then
+           return Settings.DownedColor
+       end
+   end
+   return Settings.PlayerColor
 end
 
-local Keybind2 = MainTab:CreateKeybind({ -- Можно оставить старое имя Keybind2
-	Name = "Speed Boost Bind",
-	CurrentKeybind = "X",
-	HoldToInteract = false,
-	Flag = "SpeedBoostKeybind_V2", -- Уникальный флаг
-	Callback = function(Keybind)
-		ToggleSpeedBoost()
-	end,
-})
+local old
+old = hookmetamethod(game,"__namecall",newcclosure(function(self,...)
+    local Args = {...}
+    local method = getnamecallmethod()
+    if tostring(self) == 'Communicator' and method == "InvokeServer" and Args[1] == "update" then
+        return Settings.Speed, Settings.Jump
+    end
+    return old(self,...)
+end))
 
-local MaxSpeedSlider = MainTab:CreateSlider({ -- Присваиваем объявленной переменной
-	Name = "Max Speed Cap",
-	Range = {16, 150},
-	Increment = 1,
-	Suffix = " studs/s",
-	CurrentValue = maxWalkSpeed,
-	Flag = "MaxSpeedSlider_V2", -- Уникальный флаг
-	Callback = function(Value)
-		maxWalkSpeed = Value
-	end,
-})
-
--- !! НОВЫЙ СЛАЙДЕР !!
-local AccelerationSlider = MainTab:CreateSlider({
-	Name = "Boost Acceleration",
-	Range = {0.1, 10}, -- Диапазон ускорения (подбирается экспериментально)
-	Increment = 0.1,
-	Suffix = " speed/frame", -- Примерный суффикс
-	CurrentValue = boostAcceleration,
-	Flag = "BoostAccelerationSlider", -- Уникальный флаг
-	Callback = function(Value)
-		boostAcceleration = Value
-	end,
-})
-
-
--- --- Основной цикл обновления скорости ---
-RunService.Heartbeat:Connect(function(dt) -- Получаем dt (delta time)
-	local Character = player.Character
-	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-
-	if not Humanoid then return end -- Выходим, если нет гуманоида
-
-	if SpeedBoostActive then
-		local currentSpeed = Humanoid.WalkSpeed
-		if currentSpeed < maxWalkSpeed then
-			-- Увеличиваем скорость, но не выше лимита
-			-- Используем dt для независимости от FPS: boostAcceleration * 60 * dt
-			-- где 60 - это базовая частота кадров, к которой мы приводим ускорение.
-			-- Или проще: просто добавляем значение, настроенное слайдером.
-			local accelerationAmount = boostAcceleration -- Можете умножить на dt * 60, если хотите frame-rate independence
-			local newSpeed = currentSpeed + accelerationAmount
-			Humanoid.WalkSpeed = math.min(newSpeed, maxWalkSpeed) -- Применяем ускоренную скорость, но не выше капа
-			-- else
-			-- Если скорость уже равна или выше капа, можно ничего не делать,
-			-- или принудительно установить кап: Humanoid.WalkSpeed = maxWalkSpeed
-			-- Оставим пока без действия, чтобы меньше конфликтовать
-		end
-	else
-		-- Если буст выключен, возвращаем оригинальную скорость
-		if Humanoid.WalkSpeed ~= originalSpeed then
-			-- Возможно, стоит добавить проверку, не была ли скорость изменена игрой?
-			-- Но для простоты - просто возвращаем к запомненной оригинальной.
-			Humanoid.WalkSpeed = originalSpeed
-		end
-	end
+local formatNumber = (function(value) -- //Credits: https://devforum.roblox.com/t/formatting-a-currency-label-to-include-commas/413670/3
+	value = tostring(value)
+	return value:reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
 end)
 
-print("Suka Hub (v2: Accel Boost) Loaded for Evade")
+function Format(Int) -- // Credits: https://devforum.roblox.com/t/converting-secs-to-hsec/146352
+	return string.format("%02i", Int)
+end
+
+function convertToHMS(Seconds)
+	local Minutes = (Seconds - Seconds%60)/60
+	Seconds = Seconds - Minutes*60
+	local Hours = (Minutes - Minutes%60)/60
+	Minutes = Minutes - Hours*60
+	return Format(Hours).."H "..Format(Minutes).."M "..Format(Seconds)..'S'
+end
+
+task.spawn(function()
+    while task.wait(1) do
+        --if Settings.TicketFarm then
+        --    Settings.stats.TicketFarm.duration += 1
+        --end
+        if Settings.moneyfarm then
+            Settings.stats.TokenFarm.duration += 1
+        end
+    end
+end)
+
+--local gettickets = localplayer:GetAttribute('Tickets')
+local GetTokens = localplayer:GetAttribute('Tokens')
+
+localplayer:GetAttributeChangedSignal('Tickets'):Connect(function()
+    --local tickets = tostring(gettickets - localplayer:GetAttribute('Tickets'))
+    --local cleanvalue = string.split(tickets, "-")
+    Settings.stats.TicketFarm.earned = cleanvalue[2]
+end)
+
+localplayer:GetAttributeChangedSignal('Tokens'):Connect(function()
+    local tokens = tostring(GetTokens - localplayer:GetAttribute('Tokens'))
+    local cleanvalue = string.split(tokens, "-")
+    print(cleanvalue[2])
+    Settings.stats.TokenFarm.earned = cleanvalue[2]
+end)
+
+localplayer:GetAttributeChangedSignal('Tokens'):Connect(function()
+    local tokens = tostring(GetTokens - localplayer:GetAttribute('Tokens'))
+    local cleanvalue = string.split(tokens, "-")
+    print(cleanvalue[2])
+    Settings.stats.TokenFarm.earned = cleanvalue[2]
+end)
+
+task.spawn(function()
+    while task.wait() do
+        if Settings.TicketFarm then
+            TypeLabelC5:Set('Ticket Farm')
+            DurationLabelC5:Set('Duration:'..convertToHMS(Settings.stats.TicketFarm.duration))
+            EarnedLabelC5:Set('Earned:'.. formatNumber(Settings.stats.TicketFarm.earned))
+            --TicketsLabelC5:Set('Total Tickets: '..localplayer:GetAttribute('Tickets'))
+
+            if game.Players.LocalPlayer:GetAttribute('InMenu') ~= true and localplayer:GetAttribute('Dead') ~= true then
+                for i,v in pairs(game:GetService("Workspace").Game.Effects.Tickets:GetChildren()) do
+                    localplayer.Character.HumanoidRootPart.CFrame = CFrame.new(v:WaitForChild('HumanoidRootPart').Position)
+                end
+            else
+                task.wait(2)
+                game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+            end
+            if localplayer.Character and localplayer.Character:GetAttribute("Downed") then
+                game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+                task.wait(2)
+            end
+        end
+    end
+end)
+
+
+task.spawn(function()
+    while task.wait() do
+        if Settings.AutoRespawn then
+             if localplayer.Character and localplayer.Character:GetAttribute("Downed") then
+                game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+             end
+        end
+
+        if Settings.NoCameraShake then
+            localplayer.PlayerScripts.CameraShake.Value = CFrame.new(0,0,0) * CFrame.new(0,0,0)
+        end
+        if Settings.moneyfarm then
+            TypeLabelC5:Set('Money Farm')
+            DurationLabelC5:Set('Duration:'..convertToHMS(Settings.stats.TokenFarm.duration))
+            EarnedLabelC5:Set('Earned:'.. formatNumber(Settings.stats.TokenFarm.earned))
+            --TicketsLabelC5:Set('Total Tokens: '..formatNumber(localplayer:GetAttribute('Tokens')))
+
+            if localplayer:GetAttribute("InMenu") and localplayer:GetAttribute("Dead") ~= true then
+                game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+            end
+            if localplayer.Character and localplayer.Character:GetAttribute("Downed") then
+                game:GetService("ReplicatedStorage").Events.Respawn:FireServer()
+                task.wait(3)
+            else
+                revive()
+                task.wait(1)
+            end
+
+        end
+        if Settings.moneyfarm == false and Settings.afkfarm and localplayer.Character:FindFirstChild('HumanoidRootPart') ~= nil then
+            localplayer.Character:FindFirstChild('HumanoidRootPart').CFrame = CFrame.new(6007, 7005, 8005)
+        end
+    end
+end)
+
+--Infinite yield's Anti afk
+local GC = getconnections or get_signal_cons
+	if GC then
+		for i,v in pairs(GC(localplayer.Idled)) do
+			if v["Disable"] then
+				v["Disable"](v)
+			elseif v["Disconnect"] then
+				v["Disconnect"](v)
+			end
+		end
+	else
+		localplayer.Idled:Connect(function()
+			local VirtualUser = game:GetService("VirtualUser")
+			VirtualUser:CaptureController()
+			VirtualUser:ClickButton2(Vector2.new())
+		end)
+	end
+
+print("Evade Hub Loaded")
