@@ -121,8 +121,12 @@ local Slider = MainTab:CreateSlider({
 
 RunService.Heartbeat:Connect(function()
 	if SpeedBoost then
-        local PlayerSpeed = player.Character:FindFirstChild("Humanoid")
 
-        PlayerSpeed *= Multiplier
+        local Character = player.Character
+        if Character then
+            local PlayerSpeed = Character:FindFirstChild("Humanoid").MoveSpeed
+
+            PlayerSpeed *= Multiplier
+        end
     end
 end)
